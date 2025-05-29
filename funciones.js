@@ -311,30 +311,28 @@ function hitObstacle(player, obstacle) {
 	obstacle.disableBody(true, true); // Desactiva y oculta el obstáculo tras el impacto
 	hitSound.play(); // Reproduce sonido de golpe
 
-	// Si ya se mostró la pregunta final antes y no quedan vidas, fin del juego directo
-	if (vidas <= 0 && preguntaFinalYaMostrada) {
+	// Si ya se hizo la pregunta final antes y aún así vuelve a perder vidas, termina el juego sin preguntar de nuevo
+	if (vidas <= 1 && preguntaFinalYaMostrada) {
+		vidas = 0;
+		document.getElementById('vidas').textContent = `Vidas: ${vidas}`;
 		alert(`❌ Fin del juego.`);
-
 		const tiempoTexto = document.getElementById('tiempo').textContent.replace('Tiempo: ', '');
 		guardarEnRankingRemoto(nombreJugador, tiempoTexto);
-
 		setTimeout(() => {
 			window.location.reload();
 		}, 300);
 		return;
 	}
 
-	vidas--; // Resta una vida al jugador
+	vidas--; // Resta una vida
 	document.getElementById('vidas').textContent = `Vidas: ${vidas}`; // Actualiza HUD
 
-	// Si el jugador se quedó sin vidas y no se ha hecho la pregunta aún
+	// Si el jugador se quedó sin vidas y aún no se ha hecho la pregunta final
 	if (vidas <= 0 && !preguntaFinalYaMostrada) {
-		clearInterval(cronometro); // Detiene cronómetro
-		preguntaFinalYaMostrada = true; // Marca que ya se usó la pregunta
+		clearInterval(cronometro);
+		preguntaFinalYaMostrada = true; // Marca que ya se hizo la pregunta
 
-		// Elige pregunta aleatoria
 		const pregunta = PREGUNTAS[Math.floor(Math.random() * PREGUNTAS.length)];
-
 		let textoPregunta = `📚 ¡Última oportunidad! Responde el número de la respuesta correcta:\n\n${pregunta.pregunta}\n`;
 		pregunta.opciones.forEach((op, i) => {
 			textoPregunta += `${i + 1}: ${op}\n`;
@@ -346,7 +344,7 @@ function hitObstacle(player, obstacle) {
 			alert("✅ ¡Correcto! Obtienes una vida extra.");
 			vidas = 1;
 			document.getElementById('vidas').textContent = `Vidas: ${vidas}`;
-			iniciarCronometro(); // Vuelve a correr el juego
+			iniciarCronometro();
 		} else {
 			alert(`❌ Respuesta incorrecta.\n\nFin del juego.`);
 			const tiempoTexto = document.getElementById('tiempo').textContent.replace('Tiempo: ', '');
