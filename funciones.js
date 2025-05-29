@@ -254,58 +254,9 @@ function collectGoldenMouse(player, mouse) {
 	  onComplete: () => mouse.disableBody(true, true)
 	});
   }
-	function hitObstacle(player, obstacle) {
-		obstacle.disableBody(true, true); // Desactiva y oculta el obstáculo tras el impacto
-	
-		hitSound.play(); // Reproduce sonido de golpe
-	
-		vidas--; // Resta una vida al jugador
-	
-		// Actualiza el HUD con el número actual de vidas
-		document.getElementById('vidas').textContent = `Vidas: ${vidas}`;
-	
-		// Si al jugador ya no le quedan vidas Y aún no se mostró la pregunta final
-		if (vidas <= 0 && !preguntaFinalMostrada) {
-			preguntaFinalMostrada = true; // ✅ Marca que ya se mostró la pregunta
-			clearInterval(cronometro); // Detiene el cronómetro del juego
-	
-			// Elegimos una pregunta aleatoria del arreglo de preguntas
-			const pregunta = PREGUNTAS[Math.floor(Math.random() * PREGUNTAS.length)];
-	
-			// Construimos el texto a mostrar, incluyendo la pregunta y sus opciones numeradas
-			let textoPregunta = `📚 ¡Última oportunidad!, responde el número de la respuesta correcta:\n\n${pregunta.pregunta}\n`;
-			pregunta.opciones.forEach((op, i) => {
-				textoPregunta += `${i + 1}: ${op}\n`; // Muestra las opciones como 1, 2, 3, ...
-			});
-	
-			// Mostramos la pregunta al jugador y solicitamos una respuesta
-			const respuesta = prompt(textoPregunta);
-	
-			// Si responde correctamente
-			if (respuesta && parseInt(respuesta) - 1 === pregunta.respuestaCorrecta) {
-				alert("✅ ¡Correcto! Obtienes una vida extra.");
-				vidas = 1;
-				document.getElementById('vidas').textContent = `Vidas: ${vidas}`;
-				iniciarCronometro(); // Reactiva el juego
-				preguntaFinalMostrada = false; // Permite otra pregunta si vuelve a perder luego
-			} else {
-				alert(`❌ Respuesta incorrecta.\n\nFin del juego.`);
-	
-				const tiempoTexto = document.getElementById('tiempo').textContent.replace('Tiempo: ', '');
-				guardarEnRankingRemoto(nombreJugador, tiempoTexto);
-	
-				setTimeout(() => {
-					window.location.reload();
-				}, 300);
-			}
-		}
-		else {
-			preguntaFinalMostrada = false;
-		}
-	}
 
 //Guarda al ser golpeado por un obstáculo
-/*function hitObstacle(player, obstacle) {
+function hitObstacle(player, obstacle) {
 	obstacle.disableBody(true, true); //Desactiva y oculta el obstáculo tras el impacto
 
 	hitSound.play(); //Reproduce sonido de golpe
@@ -354,7 +305,7 @@ function collectGoldenMouse(player, mouse) {
 			}, 300);
 		}
 	}
-}*/
+}
 //Enviar datos del jugador al ranking
 function guardarEnRankingRemoto(nombre, tiempo) {
 	fetch(API_URL, {
