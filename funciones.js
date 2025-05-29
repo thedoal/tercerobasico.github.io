@@ -299,9 +299,6 @@ function collectComputer(player, computer) {
 				}, 300);
 			}
 		}
-		else {
-			preguntaFinalMostrada = false;
-		}
 	}
 
 //Guarda al ser golpeado por un obstáculo
