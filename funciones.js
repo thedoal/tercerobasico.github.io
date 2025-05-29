@@ -220,7 +220,7 @@ function collectComputer(player, computer) {
 	});
 }
 //Guarda al recolectar un ratón dorado
-/*function collectGoldenMouse(player, mouse) {
+function collectGoldenMouse(player, mouse) {
 	collectSound.play(); // Reproduce sonido de recolección
 	mouse.disableBody(true, true); // Oculta el ratón dorado
 	// Selecciona una pregunta aleatoria
@@ -253,7 +253,7 @@ function collectComputer(player, computer) {
 	  duration: 300,
 	  onComplete: () => mouse.disableBody(true, true)
 	});
-  }*/
+  }
 	function hitObstacle(player, obstacle) {
 		obstacle.disableBody(true, true); // Desactiva y oculta el obstáculo tras el impacto
 	
@@ -299,10 +299,13 @@ function collectComputer(player, computer) {
 				}, 300);
 			}
 		}
+		else {
+			preguntaFinalMostrada = false;
+		}
 	}
 
 //Guarda al ser golpeado por un obstáculo
-function hitObstacle(player, obstacle) {
+/*function hitObstacle(player, obstacle) {
 	obstacle.disableBody(true, true); //Desactiva y oculta el obstáculo tras el impacto
 
 	hitSound.play(); //Reproduce sonido de golpe
@@ -351,7 +354,7 @@ function hitObstacle(player, obstacle) {
 			}, 300);
 		}
 	}
-}
+}*/
 //Enviar datos del jugador al ranking
 function guardarEnRankingRemoto(nombre, tiempo) {
 	fetch(API_URL, {
