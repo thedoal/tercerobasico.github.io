@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Misión Digital 1°A</title>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/nipplejs@0.9.0/dist/nipplejs.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #fff;
+      overflow: hidden;
+      height: 100%;
+    }
+    canvas {
+      display: block;
+      margin: auto;
+    }
+    #joystick-zone {
+      position: fixed;
+      bottom: 40px;
+      left: 40px;
+      width: 150px;
+      height: 150px;
+      z-index: 1000;
+    }
+    #hud {
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: sans-serif;
+      font-size: 18px;
+      font-weight: bold;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 6px 14px;
+      border-radius: 10px;
+      z-index: 1001;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    #ranking {
+      position: fixed;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 10px;
+      border-radius: 10px;
+      font-family: sans-serif;
+      font-size: 14px;
+      font-weight: bold;
+      z-index: 1001;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      max-height: 200px;
+      justify-content: flex-start;
+      top: 60px;
+      right: 10px;
+      width: 200px;
+    }
+    @media (max-width: 899px) {
+      #joystick-zone {
+        display: block;
+        bottom: 20px;
+      }
+      #ranking {
+        top: unset;
+        bottom: 20px;
+        right: 10px;
+        left: unset;
+        width: 160px;
+        font-size: 13px;
+        background: rgba(255, 255, 255, 0.95);
+        max-height: 120px;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+      }
+      #lista-ranking {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      #intro h1 {
+        font-size: 22px;
+      }
+      #intro p {
+        font-size: 16px;
+        padding: 0 10px;
+      }
+      #intro {
+        padding: 10px;
+      }
+    }
+    #bloqueo-orientacion {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background: white;
+    color: black;
+    font-family: sans-serif;
+    font-size: 20px;
+    text-align: center;
+    z-index: 9999;
+    padding: 40px 20px;
+  }
+  </style>
+  <style>
+    #intro {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: white;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+  
+    #intro h1 {
+      font-size: 22px;
+      margin-bottom: 10px;
+      color: #2b2b2b;
+    }
+  
+    #intro p {
+      font-size: 15px;
+      color: #444;
+      line-height: 1.5;
+      max-width: 480px;
+      margin-bottom: 20px;
+    }
+  
+    #iniciarJuego {
+      padding: 12px 24px;
+      font-size: 16px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  
+    @media (max-width: 400px) {
+      #intro h1 {
+        font-size: 20px;
+      }
+      #intro p {
+        font-size: 14px;
+      }
+      #iniciarJuego {
+        font-size: 15px;
+        padding: 10px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="bloqueo-orientacion">
+    ⚠️ Este juego se debe jugar en posición vertical.<br><br>
+    Por favor gira tu dispositivo para continuar.
+  </div>
+  <div id="hud">
+    <div id="jugador">Jugador: </div>
+    <div id="contador">Computadores: 0</div>
+    <div id="vidas">Vidas: 3</div>
+    <div id="tiempo">Tiempo: 00:00</div>
+  </div>
+  <div id="ranking">Ranking:<br><ul id="lista-ranking"></ul></div>
+  <div id="joystick-zone"></div>
+  <!-- Pantalla de introducción -->
+  <div id="intro">
+    <h1>¡Misión Computador!</h1>
+    <p>
+      ¡Hola Explorador Digital! ⚡<br><br>
+      Los computadores desaparecieron. Algunos se escondieron y otros fueron robados por los peligrosos “Chatarra Bots”.<br><br>
+      Tu misión es rescatar computadores 🖥️ y encontrar ratones dorados 🐭 que te darán poderes especiales.<br><br>
+      ¡Cuidado! Herramientas caen del cielo y te quitan vidas. Usa tus habilidades para esquivarlas.<br><br>
+      Si encuentras un ratón dorado, responde una pregunta secreta. Si aciertas… ¡ganas una vida extra! 🎁<br><br>
+      ¿Estás listo para comenzar tu misión digital?
+    </p>
+    <button id="iniciarJuego">Comenzar misión</button>
+  </div>
+<script src="preguntas.js"></script>
+<script src="funciones.js"></script>
+<script>
+//URL del servicio remoto de ranking
+const API_URL = 'https://script.google.com/macros/s/AKfycbyExRMRMOAEu-wOAQ5PsC5gZCkKcMPtNMOH1nCjVRlk2PQ6J16MlqBmF-YSaAjX0J02/exec';
+
+let game; // Variable global para reiniciar Phaser si es necesario
+let nombreJugador = null;
+
+//Variables globales del juego (jugador, elementos, estado, etc.)
+let player, cursors, computers, collected = 0;
+let obstacles;
+let joystickVelocity = { x: 0, y: 0 };
+let velocityScale = 200;
+let collectSound, hitSound;
+let vidas = 3;
+let tiempo = 0;
+let cronometro;
+let animacionMovimientoActiva = false;
+
+let juegoAncho, juegoAlto, offsetX, offsetY;
+
+// Espera a que todo el contenido del DOM se haya cargado completamente
+window.addEventListener('DOMContentLoaded', () => {
+  // Referencia al contenedor de la introducción (pantalla de historia)
+  const intro = document.getElementById('intro');
+  // Referencia al botón que inicia el juego
+  const botonInicio = document.getElementById('iniciarJuego');
+  // Verifica si ya se mostró la historia anteriormente
+  let historiaYaVista = localStorage.getItem('historiaVista');
+  // Obtiene el nombre del jugador desde localStorage, si existe
+  nombreJugador = localStorage.getItem('nombreJugador');
+  // Si ya se vio la historia y se tiene el nombre del jugador, se inicia el juego directamente
+  if (historiaYaVista && nombreJugador) {
+    intro.style.display = 'none'; // Oculta la pantalla de introducción
+    iniciarJuego(); // Lanza el juego automáticamente
+  }
+  // Evento al hacer clic en el botón de "Comenzar misión"
+  botonInicio.addEventListener('click', () => {
+    // Marca que ya se ha visto la historia
+    localStorage.setItem('historiaVista', 'true');
+    // Oculta la pantalla de introducción
+    intro.style.display = 'none';
+    // Si no se ha definido un nombre previamente, se solicita al jugador
+    if (!nombreJugador) {
+      nombreJugador = prompt('¿Cuál es tu nombre de agente rescatista?') || 'Agente Desconocido';
+      localStorage.setItem('nombreJugador', nombreJugador); // Se guarda el nombre ingresado
+    }
+    // Inicia el juego después de cerrar la introducción
+    iniciarJuego();
+  });
+});
+
+//Configuración principal de Phaser (tamaño, física, escena, etc.)
+const config = {
+  type: Phaser.AUTO,
+  backgroundColor: '#ffffff',
+  scale: {
+    mode: Phaser.Scale.RESIZE,
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+    width: window.innerWidth,
+    height: window.innerHeight
+  },
+  physics: {
+    default: 'arcade',
+    arcade: { gravity: { y: 0 }, debug: false }
+  },
+  scene: {
+    preload,
+    create,
+    update
+  }
+};
+//Precarga de imágenes y sonidos antes de comenzar el juego
+function preload() {
+  //imagenes
+  this.load.image('student', 'https://labs.phaser.io/assets/sprites/phaser-dude.png');
+  this.load.image('computer', 'icons/computer.png');
+  this.load.image('tool', 'https://labs.phaser.io/assets/sprites/spikedball.png');
+  this.load.image('goldenMouse', 'icons/raton-dorado.png');
+  this.load.image('background', 'icons/1.png');
+
+  // Sonidos
+  this.load.audio('collect', 'https://labs.phaser.io/assets/audio/SoundEffects/p-ping.mp3');
+  this.load.audio('hit', 'sounds/metal.mp3');
+  this.load.audio('bgMusic', 'sounds/sonidofondo.mp3');
+
+}
+//Configura el entorno de juego al iniciar (fondo, jugador, música, HUD, etc.)
+function create() {
+  // Mostrar el nombre del jugador en el HUD
+  document.getElementById('jugador').textContent = `Jugador: ${nombreJugador}`;
+
+  // Cargar sonidos en Phaser
+  collectSound = this.sound.add('collect');
+  hitSound = this.sound.add('hit');
+
+  // Desbloquear audio en dispositivos móviles al tocar la pantalla
+  this.input.once('pointerdown', () => this.sound.unlock());
+
+  // Iniciar el cronómetro de juego (segundos totales transcurridos)
+  iniciarCronometro();
+
+  // Calcular tamaño del área jugable horizontal
+  juegoAncho = Math.min(900, this.sys.game.config.width - 40);
+
+  // Calcular tamaño del área jugable vertical dependiendo del dispositivo
+  juegoAlto = this.sys.game.config.width < 900
+    ? Math.min(400, this.sys.game.config.height - 40)
+    : Math.min(600, this.sys.game.config.height - 40);
+
+  // Calcular los márgenes para centrar el área de juego
+  offsetX = (this.sys.game.config.width - juegoAncho) / 2;
+  offsetY = (this.sys.game.config.height - juegoAlto) / 2;
+  if (this.sys.game.config.width < 900) offsetY += 15; // Ajuste para móviles
+
+  // Crear y escalar el fondo del juego
+  const bg = this.add.image(this.sys.game.config.width / 2, this.sys.game.config.height / 2, 'background')
+    .setOrigin(0.5)
+    .setDepth(0);
+  bg.setScale(Math.max(this.sys.game.config.width / bg.width, this.sys.game.config.height / bg.height));
+
+  // Crear marco decorativo animado
+  crearMarcoDecorativo(this);
+
+  // Definir los límites físicos del área de juego
+  this.physics.world.setBounds(offsetX, offsetY, juegoAncho, juegoAlto);
+
+  // Inicializar grupos para computadores y obstáculos
+  computers = this.physics.add.group();
+  obstacles = this.physics.add.group();
+
+  // Crear generación periódica de obstáculos
+  crearObstaculos(this);
+
+  // Crear al jugador con escalado según el dispositivo
+  const escalaJugador = window.innerWidth < 900 ? 1.1 : 1.5;
+  // Posicionamos más abajo para evitar impactos inmediatos
+  const startY = offsetY + juegoAlto * 0.7;
+  player = this.physics.add.sprite(offsetX + 100, startY, 'student').setScale(escalaJugador);
+  player.setCollideWorldBounds(true); // Prevenir que el jugador salga del área
+
+  // Configurar controles de teclado
+  cursors = this.input.keyboard.createCursorKeys();
+
+  // Detectar colisiones entre jugador y objetos
+  this.physics.add.overlap(player, computers, collectComputer, null, this);
+  this.physics.add.overlap(player, obstacles, hitObstacle, null, this);
+
+  // Programar aparición periódica del ratón dorado
+  crearRatonDorado(this);
+
+  // Obtener y mostrar el ranking desde Google Sheets
+  mostrarRankingRemoto();
+
+  // Activar joystick en móviles si corresponde
+  crearJoystickMovil();
+
+  // Generar primer computador
+  crearComputador(this);
+
+  // Reproducir música de fondo en loop
+  const music = this.sound.add('bgMusic', { loop: true, volume: 0.3 });
+  music.play();
+}
+//Movimiento del jugador y animación por frame
+function update() {
+  let velocityX = 0, velocityY = 0;
+  let moviendo = false; // Flag para saber si el jugador está en movimiento
+
+  //Si hay joystick virtual activo (en móviles), usamos esa entrada
+  if (joystickVelocity.x !== 0 || joystickVelocity.y !== 0) {
+    velocityX = joystickVelocity.x * velocityScale;
+    velocityY = joystickVelocity.y * velocityScale;
+    moviendo = true;
+
+  //En caso contrario, usamos las teclas del teclado
+  } else {
+    if (cursors.left.isDown) {
+      velocityX = -velocityScale;
+      moviendo = true;
+    } else if (cursors.right.isDown) {
+      velocityX = velocityScale;
+      moviendo = true;
+    }
+
+    if (cursors.up.isDown) {
+      velocityY = -velocityScale;
+      moviendo = true;
+    } else if (cursors.down.isDown) {
+      velocityY = velocityScale;
+      moviendo = true;
+    }
+  }
+
+  // Aplicar velocidad calculada al sprite del jugador
+  player.setVelocity(velocityX, velocityY);
+
+  // 🎞️ Si el jugador se está moviendo y la animación aún no está activa, se activa
+  if (moviendo && !animacionMovimientoActiva) {
+    animacionMovimientoActiva = true;
+    player.scene.tweens.add({
+      targets: player,
+      scaleX: player.scaleX * 1.05, // Efecto rebote: agrandar levemente en X
+      scaleY: player.scaleY * 0.95, // ...y achicar en Y
+      yoyo: true,
+      repeat: -1,
+      duration: 150,
+      ease: 'Sine.easeInOut'
+    });
+
+  // ⏸️ Si el jugador deja de moverse, detenemos la animación y restauramos escala original
+  } else if (!moviendo && animacionMovimientoActiva) {
+    animacionMovimientoActiva = false;
+    player.scene.tweens.killTweensOf(player); // Detener la animación
+    player.setScale(window.innerWidth < 900 ? 1.1 : 1.5); // Restaurar escala según dispositivo
+  }
+}
+document.getElementById('iniciarJuego').addEventListener('click', () => {
+  // Marca que la historia ya fue vista
+  localStorage.setItem('historiaVista', 'true');
+
+  // Oculta la pantalla de introducción
+  document.getElementById('intro').style.display = 'none';
+
+  // Pide el nombre del jugador si aún no se ha ingresado
+  let nombreJugadorGuardado = localStorage.getItem('nombreJugador');
+  if (!nombreJugadorGuardado) {
+    nombreJugador = prompt('¿Cuál es tu nombre de agente rescatista?');
+    if (!nombreJugador) nombreJugador = 'Agente Desconocido';
+    localStorage.setItem('nombreJugador', nombreJugador);
+  } else {
+    nombreJugador = nombreJugadorGuardado;
+  }
+
+  // Inicia el juego
+  iniciarJuego(); 
+});
+
+</script>
+<script>
+  /**
+   * Función que verifica la orientación del dispositivo y actúa en consecuencia:
+   * - Muestra u oculta el mensaje de advertencia.
+   * - Pausa o reanuda el juego si está en un dispositivo móvil.
+   */
+  function verificarOrientacion() {
+    // Obtiene el elemento del DOM que muestra el mensaje de bloqueo
+    const bloqueo = document.getElementById('bloqueo-orientacion');
+    // Verifica si el usuario está en un dispositivo móvil usando el user agent
+    const esMovil = /Mobi|Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
+    // Verifica si la orientación es horizontal (más ancho que alto)
+    const esHorizontal = window.innerWidth > window.innerHeight;
+    // Si está en un móvil Y en orientación horizontal...
+    if (esMovil && esHorizontal) {
+      bloqueo.style.display = 'flex'; // Muestra el mensaje de advertencia
+      if (window.game) {
+        window.game.scene.pause(); // Pausa todas las escenas activas del juego de Phaser
+      }
+    } else {
+      // Si no está en horizontal, oculta el mensaje
+      bloqueo.style.display = 'none';
+      if (window.game) {
+        window.game.scene.resume(); // Reanuda el juego si estaba pausado
+      }
+    }
+  }
+  // Ejecuta la verificación al cargar la página
+  window.addEventListener('load', verificarOrientacion);
+  // Ejecuta la verificación si cambia el tamaño de la ventana
+  window.addEventListener('resize', verificarOrientacion);
+  // Ejecuta la verificación si se rota el dispositivo
+  window.addEventListener('orientationchange', verificarOrientacion);
+</script>
+</body>
+</html>
